@@ -9,7 +9,8 @@ while True:
     x = int(input())
 
     if x == 1:
-        gerar_par_chaves("exemplo@email.com")
+        email = input("Forneça o email para geração das chaves:")
+        gerar_par_chaves(email)
 
     if x == 2:
         listar_pares_chaves()
