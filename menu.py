@@ -4,6 +4,7 @@ while True:
     print('SELECIONE UMA DAS OPÇÕES ABAIXO:')
     print('1 - Gerar par de chaves')
     print('2 - Listar par de chaves')
+    print('3 - Gerenciar chaves')
 
     x = int(input())
 
@@ -12,3 +13,6 @@ while True:
 
     if x == 2:
         listar_pares_chaves()
+
+    if x == 3:
+        gerenciar_chaves()
