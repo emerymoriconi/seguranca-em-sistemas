@@ -36,9 +36,15 @@ def gerar_par_chaves(email, tamanho_chave=2048):
     with open(os.path.join(diretorio_chaves, f"{email}_publica.pem"), "wb") as arquivo_publico:
         arquivo_publico.write(chave_publica)
 
-    # adicionar o email ao arquivo de lista de emails
-    with open("lista_emails.txt", "a") as arquivo:
-        arquivo.write(email + "\n")
+    # adicionar o email ao arquivo de lista de emails, evitando duplicatas
+    emails_existentes = set()
+    with open("lista_emails.txt", "r") as arquivo:
+        for linha in arquivo:
+            emails_existentes.add(linha.strip())
+    
+    if email not in emails_existentes:
+        with open("lista_emails.txt", "a") as arquivo:
+                arquivo.write(email + "\n")
 
 def pesquisar_chaves_por_email(email):
     # verificar se o email está na lista de emails
