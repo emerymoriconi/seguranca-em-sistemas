@@ -9,12 +9,19 @@ diretorio_chaves = "chaves/"
 
 lista_emails = []
 
-def gerar_par_chaves(email, tamanho_chave=2048):
-    par_chaves = RSA.generate(tamanho_chave)
+def gerar_par_chaves(email, tamanho_chave=2048, senha=None):
 
-    chave_privada = par_chaves.export_key()
-    chave_publica = par_chaves.public_key().export_key()
+    chave = RSA.generate(tamanho_chave)
+    chave_privada = chave.export_key()
+    chave_publica = chave.publickey().export_key()
+    
+    '''with open("private.pem", "wb") as f:
+        f.write(chave_privada)
 
+    with open("receiver.pem", "wb") as f:
+        f.write(chave_publica)'''
+
+    
     # salvar a chave privada em um arquivo com o nome do email, protegida por senha
     senha = input("Digite uma senha para proteger a chave privada: ")
     # derivar uma chave de criptografia a partir da senha
@@ -22,6 +29,9 @@ def gerar_par_chaves(email, tamanho_chave=2048):
     # cria um objeto de cifra AES
     cipher_aes = AES.new(chave_derivada, AES.MODE_EAX)
     ciphertext, tag = cipher_aes.encrypt_and_digest(chave_privada)
+
+    # Cria o diretório se ele não existir
+    os.makedirs(diretorio_chaves, exist_ok=True)
 
     with open(os.path.join(diretorio_chaves, f"{email}_privada.enc"), "wb") as arquivo_privado:
         for x in (cipher_aes.nonce, tag, ciphertext):
@@ -33,6 +43,7 @@ def gerar_par_chaves(email, tamanho_chave=2048):
 
     # adicionar o email à lista de emails
     lista_emails.append(email)
+    return chave_privada, chave_publica
 
 def pesquisar_chaves_por_email(email):
     # verificar se o email está na lista de emails
