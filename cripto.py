@@ -7,6 +7,10 @@ import hashlib
 # onde as chaves serão armazenadas
 diretorio_chaves = "chaves/"
 
+# verifica se o diretório existe e cria-o se não existir
+if not os.path.exists(diretorio_chaves):
+    os.makedirs(diretorio_chaves)
+
 lista_emails = []
 
 def gerar_par_chaves(email, tamanho_chave=2048):
@@ -19,6 +23,7 @@ def gerar_par_chaves(email, tamanho_chave=2048):
     senha = input("Digite uma senha para proteger a chave privada: ")
     # derivar uma chave de criptografia a partir da senha
     chave_derivada = hashlib.pbkdf2_hmac('sha256', senha.encode('utf-8'), b'salt', 100000)
+
     # cria um objeto de cifra AES
     cipher_aes = AES.new(chave_derivada, AES.MODE_EAX)
     ciphertext, tag = cipher_aes.encrypt_and_digest(chave_privada)
@@ -51,11 +56,23 @@ def pesquisar_chaves_por_email(email):
         try:
             # decriptação da chave privada e verificação da sua integridade usando a tag
             chave_privada = cipher_aes.decrypt_and_verify(ciphertext, tag)
-            return chave_privada, None
+             # Retornar a chave pública e a chave privada decriptada
+            with open(os.path.join(diretorio_chaves, f"{email}_publica.pem"), "rb") as arquivo_publico:
+                chave_publica = arquivo_publico.read()
+            
+            print("Chave Pública:")
+            print(chave_publica.decode('utf-8'))
+
+            print("Chave Privada:")
+            print(chave_privada.decode('utf-8'))
+
+            return chave_publica, chave_privada
         except ValueError:
-            return None, "Senha incorreta."
+            print('Senha incorreta.')
+            return None, None
 
     else:
+        print('O email não foi encontrado.')
         return None, None
 
 def listar_pares_chaves():
