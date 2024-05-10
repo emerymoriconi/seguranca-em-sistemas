@@ -11,76 +11,67 @@ diretorio_chaves = "chaves/"
 if not os.path.exists(diretorio_chaves):
     os.makedirs(diretorio_chaves)
 
-#lista_emails = []
+def gerar_par_chaves(email, tamanho_chave=2048, senha=None):
 
-def gerar_par_chaves(email, tamanho_chave=2048):
-    par_chaves = RSA.generate(tamanho_chave)
-
-    chave_privada = par_chaves.export_key()
-    chave_publica = par_chaves.public_key().export_key()
-
+    chave = RSA.generate(tamanho_chave)
+    chave_privada = chave.export_key()
+    chave_publica = chave.publickey().export_key()
+    
     # salvar a chave privada em um arquivo com o nome do email, protegida por senha
     senha = input("Digite uma senha para proteger a chave privada: ")
-    # derivar uma chave de criptografia a partir da senha
-    chave_derivada = hashlib.pbkdf2_hmac('sha256', senha.encode('utf-8'), b'salt', 100000)
-
-    # cria um objeto de cifra AES
-    cipher_aes = AES.new(chave_derivada, AES.MODE_EAX)
-    ciphertext, tag = cipher_aes.encrypt_and_digest(chave_privada)
-
-    with open(os.path.join(diretorio_chaves, f"{email}_privada.enc"), "wb") as arquivo_privado:
-        for x in (cipher_aes.nonce, tag, ciphertext):
-            arquivo_privado.write(x)
+    
+    with open(os.path.join(diretorio_chaves, f"{email}_privada.pem"), "wb") as arquivo_privado:
+        if senha:
+            arquivo_privado.write(chave.export_key(passphrase=senha, pkcs=8, protection="scryptAndAES128-CBC"))
+        else:
+            arquivo_privado.write(chave_privada)
 
     # salvar a chave pública em um arquivo com o nome do email
     with open(os.path.join(diretorio_chaves, f"{email}_publica.pem"), "wb") as arquivo_publico:
         arquivo_publico.write(chave_publica)
 
     # adicionar o email ao arquivo de lista de emails, evitando duplicatas
-    emails_existentes = set()
-    with open("lista_emails.txt", "r") as arquivo:
-        for linha in arquivo:
-            emails_existentes.add(linha.strip())
-    
-    if email not in emails_existentes:
-        with open("lista_emails.txt", "a") as arquivo:
+    if not os.path.exists("lista_emails.txt"):
+        with open("lista_emails.txt", "w") as arquivo:
+            arquivo.write(email + "\n")
+    else:
+        emails_existentes = set()
+        with open("lista_emails.txt", "r") as arquivo:
+            for linha in arquivo:
+                emails_existentes.add(linha.strip())
+        
+        if email not in emails_existentes:
+            with open("lista_emails.txt", "a") as arquivo:
                 arquivo.write(email + "\n")
+    
+    # retorno das chaves
+    return chave_privada, chave_publica
 
 def pesquisar_chaves_por_email(email):
     # verificar se o email está na lista de emails
     with open("lista_emails.txt", "r") as arquivo:
         for linha in arquivo:
             if email in linha:
-                # ler a chave privada encriptada do arquivo correspondente ao email
-                with open(os.path.join(diretorio_chaves, f"{email}_privada.enc"), "rb") as arquivo_privado:
-                    nonce, tag, ciphertext = [arquivo_privado.read(x) for x in (16, 16, -1)]
+                # Verificar se o arquivo da chave privada existe
+                caminho_chave_privada = os.path.join(diretorio_chaves, f"{email}_privada.pem")
+                if os.path.exists(caminho_chave_privada):
+                    # ler a chave privada encriptada do arquivo correspondente ao email
+                    with open(caminho_chave_privada, "rb") as arquivo_privado:
+                        chave_privada = arquivo_privado.read()
+                else:
+                    chave_privada = None
 
-                    senha = input("Digite a senha para descriptografar a chave privada: ")
-
-                    # derivar a chave de criptografia a partir da senha
-                    chave_derivada = hashlib.pbkdf2_hmac('sha256', senha.encode('utf-8'), b'salt', 100000)
-
-                    cipher_aes = AES.new(chave_derivada, AES.MODE_EAX, nonce)
-
-                    try:
-                        # decriptação da chave privada e verificação da sua integridade usando a tag
-                        chave_privada = cipher_aes.decrypt_and_verify(ciphertext, tag)
-                        # Retornar a chave pública e a chave privada decriptada
-                        with open(os.path.join(diretorio_chaves, f"{email}_publica.pem"), "rb") as arquivo_publico:
-                            chave_publica = arquivo_publico.read()
-                        
-                        print("Chave Pública:")
-                        print(chave_publica.decode('utf-8'))
-
-                        print("Chave Privada:")
-                        print(chave_privada.decode('utf-8'))
-
-                        return chave_publica, chave_privada
-                    except ValueError:
-                        print('Senha incorreta.')
-                        return None, None
-        print('O email não foi encontrado.')
-        return None, None
+                # Verificar se o arquivo da chave pública existe
+                caminho_chave_publica = os.path.join(diretorio_chaves, f"{email}_publica.pem")
+                if os.path.exists(caminho_chave_publica):
+                    # ler a chave pública encriptada do arquivo correspondente ao email
+                    with open(caminho_chave_publica, "rb") as arquivo_publico:
+                        chave_publica = arquivo_publico.read()
+                else:
+                    chave_publica = None
+                
+                return chave_privada, chave_publica
+        raise ValueError("E-mail não encontrado")
 
 def listar_pares_chaves():
     # Exibir todos os pares de chaves na lista
@@ -94,8 +85,36 @@ def listar_pares_chaves():
                 print("Chave Pública:")
                 print(chave_publica.decode('utf-8'))
 
-            # Listar a chave privada encriptada
-            with open(os.path.join(diretorio_chaves, f"{email}_privada.enc"), "rb") as arquivo_privado:
-                print("Chave Privada (encriptada na tela):")
-                print(arquivo_privado.read())
+            # Listar a chave privada
+            with open(os.path.join(diretorio_chaves, f"{email}_privada.pem"), "rb") as arquivo_privado:
+                chave_privada = arquivo_privado.read()
+                print("Chave Privada:")
+                print(chave_privada.decode('utf-8'))
 
+def gerenciar_chaves():
+    menu = '''
+    1 - Pesquisar par de chaves
+    2 - Remover par de chaves
+    3 - Voltar
+    '''
+
+    while True:
+        print(menu)
+        x = int(input())
+        if (x == 3):
+            break
+        if (x == 1):
+            while(True):
+                email = input("Digite o email: ")
+                try:
+                    chave_privada, chave_publica = pesquisar_chaves_por_email(email)
+                    if chave_privada:
+                        print("Chave privada:")
+                        print(chave_privada.decode('utf-8'))
+                    if chave_publica:
+                        print("Chave pública:")
+                        print(chave_publica.decode('utf-8'))
+                    break
+                except ValueError as e:
+                    print(e)
+                    print("Por favor, insira um e-mail válido.\n")
