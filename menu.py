@@ -36,11 +36,16 @@ while True:
                 print("Escolha inválida. Tente novamente.")
         print("Email escolhido: ", email)
         mensagem = input("Forneça a mensagem para criptografar: ")
-        usar_chave_privada = input("Deseja usar a chave privada para criptografar? (S/N): ")
-        if usar_chave_privada == 'S':
-            usar_chave_privada = True
-        elif usar_chave_privada == 'N':
-            usar_chave_privada = False
+        while True:
+            usar_chave_privada = input("Deseja usar a chave privada para criptografar? (S/N): ")
+            if usar_chave_privada.lower() == 's':
+                usar_chave_privada = True
+                break
+            elif usar_chave_privada.lower() == 'n':
+                usar_chave_privada = False
+                break
+            else:
+                print("Input inválido")
         try:
             print("Mensagem criptografada: ", criptografar_mensagem(email, mensagem, usar_chave_privada))
         except Exception as e:
