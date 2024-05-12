@@ -4,6 +4,17 @@ import sys
 import re
 from cripto import salvar_chave_publica, adicionar_email, salvar_chave_privada
 
+import tkinter as tk
+from tkinter import filedialog
+
+def selecionar_arquivo(chave):
+    root = tk.Tk()
+    root.withdraw()  # Esconde a janela principal
+    arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo de chave " + chave,
+                                         filetypes=(("Arquivos de texto", "*.txt"), ("Todos os arquivos", "*.*")))
+    return arquivo
+
+
 def importar_chaves():
     while (True):
         email = input("Forneça o email associado ao par de chaves: ")
@@ -13,11 +24,13 @@ def importar_chaves():
         else:
             break
     
-    chave_publica_path = input("Forneça o caminho do arquivo da chave pública: ")
+    chave_publica_path = selecionar_arquivo("pública")
+    #input("Forneça o caminho do arquivo da chave pública: ")
     while (True):
         resposta = input("Deseja importar chave privada? (S/N)")
         if resposta.lower() == 's':
-            chave_privada_path = input("Forneça o caminho do arquivo da chave privada: ")
+            chave_privada_path = selecionar_arquivo("pprivada")
+            #input("Forneça o caminho do arquivo da chave privada: ")
             senha = input("Forneça a senha da chave privada: ")
 
             break
