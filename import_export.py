@@ -1,3 +1,4 @@
+import shutil
 from cripto import *
 import sys
 import re
@@ -40,3 +41,36 @@ def importar_chaves():
     except Exception as e:
         print(f"Erro ao importar as chaves: {e}")
         return
+    
+
+def exportar_chaves():
+    while (True):
+        email = input("Forneça o email associado ao par de chaves: ")
+        if not re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
+            print("Email inválido.")
+            continue
+        else:
+            break
+
+    # diretório de exportação
+    diretorio_exportacao = input("Forneça o diretório de exportação: ")
+    if not os.path.exists(diretorio_exportacao):
+        os.makedirs(diretorio_exportacao)        
+
+
+    with open("lista_emails.txt", "r") as arquivo:
+        for linha in arquivo:
+            if email in linha:
+                # Verificar se o arquivo da chave privada existe
+                caminho_chave_privada = os.path.join(diretorio_chaves, f"{email}_privada.pem")
+                if os.path.exists(caminho_chave_privada):
+                    # copiar o arquivo para o diretório de exportação
+                    shutil.copy(caminho_chave_privada, diretorio_exportacao)
+
+                # Verificar se o arquivo da chave pública existe
+                caminho_chave_publica = os.path.join(diretorio_chaves, f"{email}_publica.pem")
+                if os.path.exists(caminho_chave_publica):
+                    # copiar o arquivo para o diretório de exportação
+                    shutil.copy(caminho_chave_publica, diretorio_exportacao)
+                return
+        raise ValueError("E-mail não encontrado")

@@ -3,7 +3,7 @@ from import_export import *
 import sys
 
 while True:
-    print('SELECIONE UMA DAS OPÇÕES ABAIXO:')
+    print('\nSELECIONE UMA DAS OPÇÕES ABAIXO:')
     print('1 - Gerar par de chaves')
     print('2 - Listar par de chaves')
     print('3 - Gerenciar chaves')
@@ -11,7 +11,7 @@ while True:
     print('5 - Descriptografar mensagem')
     print('6 - Importar chaves')
     print('7 - Exportar chaves')
-    print('0 - Sair')
+    print('0 - Sair\n')
 
     x = int(input())
 
@@ -19,7 +19,13 @@ while True:
         sys.exit()
 
     elif x == 1:
-        email = input("Forneça o email para geração das chaves: ")
+        while (True):
+            email = input("Forneça o email para a geração do par de chaves: ")
+            if not re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
+                print("Email inválido.")
+                continue
+            else:
+                break
         chave_privada, chave_publica = gerar_par_chaves(email)
 
     elif x == 2:
@@ -72,3 +78,6 @@ while True:
 
     elif x == 6:
         importar_chaves()
+
+    elif x == 7:
+        exportar_chaves()
