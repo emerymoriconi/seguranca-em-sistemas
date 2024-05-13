@@ -7,3 +7,4 @@ luis@email.com
 benjamim@email.com
 emerymoriconi@email.com
 >>>>>>> Stashed changes
+ola@teste.com
