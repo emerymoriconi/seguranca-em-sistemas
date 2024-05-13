@@ -102,31 +102,60 @@ def gerar_par_chaves(tamanho_chave=2048):
     # retorno das chaves
     return chave_privada, chave_publica
 
-def pesquisar_chaves_por_email(email):
-    # verificar se o email está na lista de emails
-    with open("lista_emails.txt", "r") as arquivo:
-        for linha in arquivo:
-            if email in linha:
-                # Verificar se o arquivo da chave privada existe
-                caminho_chave_privada = os.path.join(diretorio_chaves, f"{email}_privada.pem")
-                if os.path.exists(caminho_chave_privada):
-                    # ler a chave privada encriptada do arquivo correspondente ao email
-                    with open(caminho_chave_privada, "rb") as arquivo_privado:
-                        chave_privada = arquivo_privado.read()
-                else:
-                    chave_privada = None
+def pesquisar_chaves_por_email(email, usar_lista):
 
-                # Verificar se o arquivo da chave pública existe
-                caminho_chave_publica = os.path.join(diretorio_chaves, f"{email}_publica.pem")
-                if os.path.exists(caminho_chave_publica):
-                    # ler a chave pública encriptada do arquivo correspondente ao email
-                    with open(caminho_chave_publica, "rb") as arquivo_publico:
-                        chave_publica = arquivo_publico.read()
-                else:
-                    chave_publica = None
-                
-                return chave_publica, chave_privada
-        raise ValueError("E-mail não encontrado")
+    if usar_lista:
+        # verificar se o email está na lista de emails
+        with open("lista_emails.txt", "r") as arquivo:
+            for linha in arquivo:
+                if email in linha:
+                    # Verificar se o arquivo da chave privada existe
+                    caminho_chave_privada = os.path.join(diretorio_chaves, f"{email}_privada.pem")
+                    if os.path.exists(caminho_chave_privada):
+                        # ler a chave privada encriptada do arquivo correspondente ao email
+                        with open(caminho_chave_privada, "rb") as arquivo_privado:
+                            chave_privada = arquivo_privado.read()
+                    else:
+                        chave_privada = None
+
+                    # Verificar se o arquivo da chave pública existe
+                    caminho_chave_publica = os.path.join(diretorio_chaves, f"{email}_publica.pem")
+                    if os.path.exists(caminho_chave_publica):
+                        # ler a chave pública encriptada do arquivo correspondente ao email
+                        with open(caminho_chave_publica, "rb") as arquivo_publico:
+                            chave_publica = arquivo_publico.read()
+                    else:
+                        chave_publica = None
+                    
+                    return chave_publica, chave_privada
+            # verifica se o e-mail não encontrado está na lista de e-mails e apaga-o da lista
+            with open("lista_emails.txt", "r") as arquivo:
+                emails = [linha.strip() for linha in arquivo]
+                if email in emails:
+                    emails.remove(email)
+            raise ValueError("E-mail não encontrado")
+    else:
+        # verificar se há ao menos uma instância de chave privada ou pública salva localmente
+            # Verificar se o arquivo da chave privada existe
+            caminho_chave_privada = os.path.join(diretorio_chaves, f"{email}_privada.pem")
+            if os.path.exists(caminho_chave_privada):
+                # ler a chave privada encriptada do arquivo correspondente ao email
+                with open(caminho_chave_privada, "rb") as arquivo_privado:
+                    chave_privada = arquivo_privado.read()
+            else:
+                chave_privada = None
+
+            # Verificar se o arquivo da chave pública existe
+            caminho_chave_publica = os.path.join(diretorio_chaves, f"{email}_publica.pem")
+            if os.path.exists(caminho_chave_publica):
+                # ler a chave pública encriptada do arquivo correspondente ao email
+                with open(caminho_chave_publica, "rb") as arquivo_publico:
+                    chave_publica = arquivo_publico.read()
+            else:
+                chave_publica = None
+            
+            return chave_publica, chave_privada
+
 
 def listar_pares_chaves():
     # Verificar se o arquivo existe e criá-lo se não existir
@@ -139,12 +168,26 @@ def listar_pares_chaves():
     if not emails:
         print("Nenhum par de chaves foi gerado até agora.")
         return
+    
+    # para cada e-mail na lista, verifica se há ao menos uma instância de chave privada ou pública salva localmente
+    # caso contrário, apaga o e-mail da lista e do arquivo de emails
+    for email in emails:
+        chave_publica, chave_privada = pesquisar_chaves_por_email(email, False)
+        if chave_privada is None and chave_publica is None:
+            emails.remove(email)
+
+    # apagando arquivo de emails e recriando-o com os emails válidos
+    os.remove("lista_emails.txt")
+    with open("lista_emails.txt", "w") as arquivo:
+        for email in emails:
+            arquivo.write(email + "\n")
 
     print("Emails associados aos pares de chaves gerados até agora:")
     for i, email in enumerate(emails, start=1):
         print(f"{i} - {email}")
-    
     return emails
+
+
 
 def apagar_par_de_chaves(email):
 
@@ -156,9 +199,10 @@ def apagar_par_de_chaves(email):
 
     try:
         os.remove(os.path.join(diretorio_chaves, f"{email}_publica.pem"))
-        os.remove(os.path.join(diretorio_chaves, f"{email}_privada.pem"))
+        if os.path.exists(os.path.join(diretorio_chaves, f"{email}_privada.pem")):
+            os.remove(os.path.join(diretorio_chaves, f"{email}_privada.pem"))
 
-            # Remover o email da lista
+        # Remover o email da lista
         emails.remove(email)
 
         # Atualizar o arquivo de emails
@@ -185,34 +229,40 @@ def gerenciar_chaves():
         if (x == 1):
             while(True):
                 email = input("Digite o email: ")
+                if email == '0':
+                    break
                 try:
-                    chave_publica, chave_privada = pesquisar_chaves_por_email(email)
+                    chave_publica, chave_privada = pesquisar_chaves_por_email(email, True)
                     if chave_privada:
                         print("Chave privada:")
                         print(chave_privada.decode('utf-8'))
                     if chave_publica:
                         print("Chave pública:")
                         print(chave_publica.decode('utf-8'))
+                    if not chave_privada and not chave_publica:
+                        print("Nenhum par de chaves encontrado para o email fornecido.")
                     break
                 except ValueError as e:
                     print(e)
-                    print("Por favor, insira um e-mail válido.\n")
+                    print("Por favor, insira um e-mail válido ou digite 0 para voltar.\n")
         if (x == 2):
             listar_pares_chaves()
         if (x == 3):
             while(True):
                 email = input("Digite o email associado ao par de chaves que deseja remover: ")
+                if email == '0':
+                    break
                 try:
                     print(apagar_par_de_chaves(email))
                     break
                 except ValueError as e:
                     print(e)
-                    print("Por favor, insira um e-mail válido.\n")
+                    print("Por favor, insira um e-mail válido ou digite 0 para voltar.\n")
         if (x == 4):
             break
 
 def criptografar_mensagem(email, arquivo, usar_chave_privada):
-    chave_publica, chave_privada = pesquisar_chaves_por_email(email)
+    chave_publica, chave_privada = pesquisar_chaves_por_email(email, True)
     if usar_chave_privada:
         senha = getpass("Digite a senha para desbloquear a chave privada: ")
         try:
@@ -271,7 +321,7 @@ def criptografar_mensagem(email, arquivo, usar_chave_privada):
 
 
 def descriptografar_mensagem(email, arquivo_cifrado):
-    chave_publica, chave_privada = pesquisar_chaves_por_email(email)
+    chave_publica, chave_privada = pesquisar_chaves_por_email(email, True)
     senha = getpass("Digite a senha para desbloquear a chave privada: ")
     try:
         chave = RSA.import_key(chave_privada, passphrase=senha)

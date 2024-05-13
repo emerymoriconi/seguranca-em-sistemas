@@ -3,7 +3,6 @@ from cripto import *
 import sys
 import re
 from cripto import salvar_chave_publica, adicionar_email, salvar_chave_privada
-
 import tkinter as tk
 from tkinter import filedialog
 
