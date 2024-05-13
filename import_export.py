@@ -10,6 +10,7 @@ def selecionar_arquivo_criptografar():
     # selecionando um arquivo com tkinter
     root = tk.Tk()
     try:
+        print("Selecione o arquivo para criptografar:")
         arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo para criptografar", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
         with open(arquivo, "r") as file:
             root.destroy()
@@ -22,6 +23,7 @@ def selecionar_arquivo_descriptografar():
     # selecionando um arquivo com tkinter
     root = tk.Tk()
     try:
+        print("Selecione o arquivo para descriptografar:")
         arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo para descriptografar", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
         with open(arquivo, "r") as file:
             root.destroy()
@@ -34,6 +36,7 @@ def selecionar_arquivo(chave):
     # criando janela de seleção de arquivo com tkinter 
     root = tk.Tk()
     try:
+        print(f"Selecione o arquivo da chave {chave}:")
         arquivo = filedialog.askopenfilename(initialdir="/", title=f"Selecione arquivo da chave {chave}", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
         with open(arquivo, "r") as file:
             root.destroy()
