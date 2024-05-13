@@ -11,7 +11,7 @@ def selecionar_arquivo(chave):
     root = tk.Tk()
     root.withdraw()  # Esconde a janela principal
     arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo de chave " + chave,
-                                         filetypes=(("Arquivos de texto", "*.txt"), ("Todos os arquivos", "*.*")))
+                                         filetypes=(("Arquivos .pem", "*.pem"), ("Todos os arquivos", "*.*")))
     return arquivo
 
 
