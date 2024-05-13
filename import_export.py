@@ -88,6 +88,7 @@ def importar_chaves():
                 dados = arquivo.read()
                 chave_privada = RSA.import_key(dados, passphrase=senha)
                 salvar_chave_privada(email, chave_privada, senha)
+        print("Chaves importadas com sucesso.")
     except Exception as e:
         print(f"Erro ao importar as chaves: {e}")
         return
@@ -104,6 +105,7 @@ def exportar_chaves():
 
     # diretório de exportação
     root = tk.Tk()
+    print("Selecione o diretório de exportação:")
     diretorio = filedialog.askdirectory(initialdir="/", title="Selecione o diretório de exportação")
     if not diretorio:
         print("Operação abortada. Diretório não selecionado.")

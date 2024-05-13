@@ -286,23 +286,9 @@ def criptografar_mensagem(email, arquivo, usar_chave_privada):
             mensagem = arquivo.read()
             mensagem_cifrada = cipher_rsa.encrypt(mensagem)
 
-        '''
         # definindo o nome do arquivo para salvar a mensagem cifrada
         while True:
-            nome_do_arquivo = input("Digite o nome do arquivo para salvar a mensagem cifrada: ")
-            if not nome_do_arquivo.strip():
-                print("Nome do arquivo não pode ser vazio.")
-                continue
-            else:
-                break
-
-        # definindo o diretório de exportação
-        diretorio_exportacao = input("Forneça o diretório de exportação: ")
-        if not os.path.exists(diretorio_exportacao):
-            os.makedirs(diretorio_exportacao)
-        '''
-        # definindo o nome do arquivo para salvar a mensagem cifrada
-        while True:
+            print("Digite o nome do arquivo para salvar a mensagem cifrada")
             nome_do_arquivo = filedialog.asksaveasfilename(filetypes=[("Arquivos de texto", "*.txt")])
             if not nome_do_arquivo.strip():
                 print("Nome do arquivo não pode ser vazio.")
@@ -339,24 +325,9 @@ def descriptografar_mensagem(email, arquivo_cifrado):
             mensagem_cifrada = base64.b64decode(arquivo.read())
             mensagem = cipher_rsa.decrypt(mensagem_cifrada)
         
-        '''
         # definindo o nome do arquivo para salvar a mensagem decifrada
         while True:
-            nome_do_arquivo = input("Digite o nome do arquivo para salvar a mensagem decifrada: ")
-            if not nome_do_arquivo.strip():
-                print("Nome do arquivo não pode ser vazio.")
-                continue
-            else:
-                break
-
-        # definindo o diretório de exportação
-        diretorio_exportacao = input("Forneça o diretório de exportação: ")
-        if not os.path.exists(diretorio_exportacao):
-            os.makedirs(diretorio_exportacao)
-        '''
-
-        # definindo o nome do arquivo para salvar a mensagem decifrada
-        while True:
+            print("Digite o nome do arquivo para salvar a mensagem decifrada")
             nome_do_arquivo = filedialog.asksaveasfilename(filetypes=[("Arquivos de texto", "*.txt")])
             if not nome_do_arquivo.strip():
                 print("Nome do arquivo não pode ser vazio.")
