@@ -12,26 +12,15 @@ diretorio_chaves = "chaves/"
 if not os.path.exists(diretorio_chaves):
     os.makedirs(diretorio_chaves)
 
-def gerar_par_chaves(email, tamanho_chave=2048, senha=None):
-
-    chave = RSA.generate(tamanho_chave)
-    chave_privada = chave.export_key()
-    chave_publica = chave.publickey().export_key()
-    
-    # salvar a chave privada em um arquivo com o nome do email, protegida por senha
-    senha = input("Digite uma senha para proteger a chave privada: ")
-    
+def salvar_chave_privada(email, chave, senha):
     with open(os.path.join(diretorio_chaves, f"{email}_privada.pem"), "wb") as arquivo_privado:
-        if senha:
-            arquivo_privado.write(chave.export_key(passphrase=senha, pkcs=8, protection="scryptAndAES128-CBC"))
-        else:
-            arquivo_privado.write(chave_privada)
+        arquivo_privado.write(chave.export_key(passphrase=senha, pkcs=8, protection="scryptAndAES128-CBC"))
 
-    # salvar a chave pública em um arquivo com o nome do email
+def salvar_chave_publica(email, chave):
     with open(os.path.join(diretorio_chaves, f"{email}_publica.pem"), "wb") as arquivo_publico:
-        arquivo_publico.write(chave_publica)
+        arquivo_publico.write(chave.publickey().export_key())
 
-    # adicionar o email ao arquivo de lista de emails, evitando duplicatas
+def adicionar_email(email):
     if not os.path.exists("lista_emails.txt"):
         with open("lista_emails.txt", "w") as arquivo:
             arquivo.write(email + "\n")
@@ -44,6 +33,26 @@ def gerar_par_chaves(email, tamanho_chave=2048, senha=None):
         if email not in emails_existentes:
             with open("lista_emails.txt", "a") as arquivo:
                 arquivo.write(email + "\n")
+
+def gerar_par_chaves(email, tamanho_chave=2048):
+
+    chave = RSA.generate(tamanho_chave)
+    chave_privada = chave.export_key()
+    chave_publica = chave.publickey().export_key()
+    
+    # salvar a chave privada em um arquivo com o nome do email, protegida por senha
+    senha = input("Digite uma senha para proteger a chave privada: ")
+    while not senha.strip():
+        print("Senha não pode ser vazia. Por favor, tente novamente.")
+        senha = input("Digite uma senha para proteger a chave privada: ")
+    
+    salvar_chave_privada(email, chave, senha)
+
+    # salvar a chave pública em um arquivo com o nome do email
+    salvar_chave_publica(email, chave.publickey())
+
+    # adicionar o email ao arquivo de lista de emails, evitando duplicatas
+    adicionar_email(email)
     
     # retorno das chaves
     return chave_privada, chave_publica
@@ -120,8 +129,9 @@ def apagar_par_de_chaves(email):
 def gerenciar_chaves():
     menu = '''
     1 - Pesquisar par de chaves
-    2 - Remover par de chaves
-    3 - Voltar
+    2 - Listar pares de chaves
+    3 - Remover par de chaves
+    4 - Voltar
     '''
 
     while True:
@@ -143,6 +153,8 @@ def gerenciar_chaves():
                     print(e)
                     print("Por favor, insira um e-mail válido.\n")
         if (x == 2):
+            listar_pares_chaves()
+        if (x == 3):
             while(True):
                 email = input("Digite o email associado ao par de chaves que deseja remover: ")
                 try:
@@ -151,7 +163,7 @@ def gerenciar_chaves():
                 except ValueError as e:
                     print(e)
                     print("Por favor, insira um e-mail válido.\n")
-        if (x == 3):
+        if (x == 4):
             break
 
 def criptografar_mensagem(email, mensagem, usar_chave_privada):
