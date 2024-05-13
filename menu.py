@@ -1,5 +1,6 @@
 from cripto import *
 from import_export import *
+import re
 import sys
 
 while True:
@@ -18,59 +19,26 @@ while True:
         sys.exit()
 
     elif x == 1:
-        while (True):
-            email = input("Forneça o email para a geração do par de chaves: ")
-            if not re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
-                print("Email inválido.")
-                continue
-            else:
-                break
-        chave_privada, chave_publica = gerar_par_chaves(email)
+        chave_privada, chave_publica = gerar_par_chaves()
 
     elif x == 2:
         gerenciar_chaves()
     
     elif x == 3:
-        while True:
-            emails = listar_pares_chaves()
-            escolha = input("Escolha um email pelo número: ")
-            if escolha.isdigit() and 1 <= int(escolha) <= len(emails):
-                email = emails[int(escolha) - 1]
-                break
-            else:
-                print("Escolha inválida. Tente novamente.")
-        print("Email escolhido: ", email)
-        mensagem = input("Forneça a mensagem para criptografar: ")
-        while True:
-            usar_chave_privada = input("Deseja usar a chave privada para criptografar? (S/N): ")
-            if usar_chave_privada.lower() == 's':
-                usar_chave_privada = True
-                break
-            elif usar_chave_privada.lower() == 'n':
-                usar_chave_privada = False
-                break
-            else:
-                print("Input inválido")
-        try:
-            print("Mensagem criptografada: ", criptografar_mensagem(email, mensagem, usar_chave_privada))
-        except Exception as e:
-            print(f"Erro ao criptografar a mensagem: {e}")
+        email = selecionar_email()
+        arquivo = selecionar_arquivo_criptografar()
+        if criptografar(email, arquivo):
+            print("Arquivo criptografado salvo com sucesso no diretório escolhido!")
+        else:
+            print("Erro ao criptografar o arquivo.")
 
     elif x == 4:
-        while True:
-            emails = listar_pares_chaves()
-            escolha = input("Escolha um email pelo número: ")
-            if escolha.isdigit() and 1 <= int(escolha) <= len(emails):
-                email = emails[int(escolha) - 1]
-                break
-            else:
-                print("Escolha inválida. Tente novamente.")
-        print("Email escolhido: ", email)
-        mensagem = input("Forneça a mensagem para descriptografar: ")
-        try:
-            print("Mensagem descriptografada: ", descriptografar_mensagem(email, mensagem))
-        except Exception as e:
-            print(f"Erro ao descriptografar a mensagem: {e}")
+        email = selecionar_email()
+        arquivo = selecionar_arquivo_descriptografar()
+        if descriptografar_mensagem(email, arquivo):
+            print("Arquivo descriptografado salvo com sucesso no diretório escolhido!")
+        else:
+            print("Erro ao descriptografar o arquivo.")
 
     elif x == 5:
         importar_chaves()

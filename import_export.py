@@ -7,6 +7,34 @@ from cripto import salvar_chave_publica, adicionar_email, salvar_chave_privada
 import tkinter as tk
 from tkinter import filedialog
 
+def selecionar_arquivo_criptografar():
+    # selecionando um arquivo com tkinter
+    root = tk.Tk()
+    root.withdraw()  # Esconde a janela principal
+    while True:
+        try:
+            arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo para criptografar", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
+            with open(arquivo, "r") as file:
+                return arquivo
+        except Exception as e:
+            print(f"Erro ao selecionar arquivo: {e}")
+            print("Tente novamente.")
+            continue
+
+def selecionar_arquivo_descriptografar():
+    # selecionando um arquivo com tkinter
+    root = tk.Tk()
+    root.withdraw()  # Esconde a janela principal
+    while True:
+        try:
+            arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo para descriptografar", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
+            with open(arquivo, "r") as file:
+                return arquivo
+        except Exception as e:
+            print(f"Erro ao selecionar arquivo: {e}")
+            print("Tente novamente.")
+            continue
+
 def selecionar_arquivo(chave):
     root = tk.Tk()
     root.withdraw()  # Esconde a janela principal

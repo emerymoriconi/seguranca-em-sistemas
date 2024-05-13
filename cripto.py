@@ -2,8 +2,10 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Util import Padding
 from getpass import getpass
+from tkinter import Tk
 import os
 import base64
+import re
 
 # onde as chaves serão armazenadas
 diretorio_chaves = "chaves/"
@@ -12,6 +14,46 @@ diretorio_chaves = "chaves/"
 if not os.path.exists(diretorio_chaves):
     os.makedirs(diretorio_chaves)
 
+def selecionar_email():
+    while True:
+        emails = listar_pares_chaves()
+        escolha = input("Escolha um email pelo número: ")
+        if escolha.isdigit() and 1 <= int(escolha) <= len(emails):
+            email = emails[int(escolha) - 1]
+            break
+        else:
+            print("Escolha inválida. Tente novamente.")
+    print("Email escolhido: ", email)
+    return email
+
+def verifica_email():
+    while (True):
+        email = input("Forneça o email associado ao par de chaves: ")
+        if not re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
+            print("Email inválido.")
+            continue
+        else:
+            break
+    return email
+
+def criptografar(email, arquivo):
+    while True:
+        usar_chave_privada = input("Deseja usar a chave privada para criptografar? (S/N): ")
+        if usar_chave_privada.lower() == 's':
+            usar_chave_privada = True
+            break
+        elif usar_chave_privada.lower() == 'n':
+            usar_chave_privada = False
+            break
+        else:
+            print("Input inválido")
+    
+    if criptografar_mensagem(email, arquivo, usar_chave_privada):
+        return True
+    
+
+
+    
 def salvar_chave_privada(email, chave, senha):
     with open(os.path.join(diretorio_chaves, f"{email}_privada.pem"), "wb") as arquivo_privado:
         arquivo_privado.write(chave.export_key(passphrase=senha, pkcs=8, protection="scryptAndAES128-CBC"))
@@ -34,7 +76,9 @@ def adicionar_email(email):
             with open("lista_emails.txt", "a") as arquivo:
                 arquivo.write(email + "\n")
 
-def gerar_par_chaves(email, tamanho_chave=2048):
+def gerar_par_chaves(tamanho_chave=2048):
+
+    email = verifica_email()
 
     chave = RSA.generate(tamanho_chave)
     chave_privada = chave.export_key()
@@ -141,7 +185,7 @@ def gerenciar_chaves():
             while(True):
                 email = input("Digite o email: ")
                 try:
-                    chave_privada, chave_publica = pesquisar_chaves_por_email(email)
+                    chave_publica, chave_privada = pesquisar_chaves_por_email(email)
                     if chave_privada:
                         print("Chave privada:")
                         print(chave_privada.decode('utf-8'))
@@ -166,7 +210,7 @@ def gerenciar_chaves():
         if (x == 4):
             break
 
-def criptografar_mensagem(email, mensagem, usar_chave_privada):
+def criptografar_mensagem(email, arquivo, usar_chave_privada):
     chave_publica, chave_privada = pesquisar_chaves_por_email(email)
     if usar_chave_privada:
         senha = getpass("Digite a senha para desbloquear a chave privada: ")
@@ -174,22 +218,48 @@ def criptografar_mensagem(email, mensagem, usar_chave_privada):
             chave = RSA.import_key(chave_privada, passphrase=senha)
             if not chave.has_private():
                 print("Senha incorreta.")
-                return None
+                return False
         except ValueError:
             print("Senha incorreta.")
-            return None
+            return False
     else:
         chave = RSA.import_key(chave_publica)
     
     if chave is None:
         print("Não foi possível decriptar a chave privada.")
-        return None
+        return False
 
     cipher_rsa = PKCS1_OAEP.new(chave)
-    mensagem_cifrada = cipher_rsa.encrypt(mensagem.encode('utf-8'))
-    return base64.b64encode(mensagem_cifrada).decode('utf-8')
+    try:
+        with open(arquivo, "rb") as arquivo:
+            mensagem = arquivo.read()
+            mensagem_cifrada = cipher_rsa.encrypt(mensagem)
 
-def descriptografar_mensagem(email, mensagem_cifrada):
+        # definindo o nome do arquivo para salvar a mensagem cifrada
+        while True:
+            nome_do_arquivo = input("Digite o nome do arquivo para salvar a mensagem cifrada: ")
+            if not nome_do_arquivo.strip():
+                print("Nome do arquivo não pode ser vazio.")
+                continue
+            else:
+                break
+
+        # definindo o diretório de exportação
+        diretorio_exportacao = input("Forneça o diretório de exportação: ")
+        if not os.path.exists(diretorio_exportacao):
+            os.makedirs(diretorio_exportacao)
+
+        # salvando a mensagem cifrada no arquivo    
+        with open(os.path.join(diretorio_exportacao, nome_do_arquivo+".txt"), "wb") as arquivo_cifrado:
+            arquivo_cifrado.write(base64.b64encode(mensagem_cifrada))
+            return True
+    except ValueError:
+        print("A mensagem não pôde ser criptografada com a chave fornecida.")
+        return False
+
+
+
+def descriptografar_mensagem(email, arquivo_cifrado):
     chave_publica, chave_privada = pesquisar_chaves_por_email(email)
     senha = getpass("Digite a senha para desbloquear a chave privada: ")
     try:
@@ -204,8 +274,28 @@ def descriptografar_mensagem(email, mensagem_cifrada):
 
     cipher_rsa = PKCS1_OAEP.new(chave)
     try:
-        mensagem = cipher_rsa.decrypt(base64.b64decode(mensagem_cifrada))
+        with open(arquivo_cifrado, "rb") as arquivo:
+            mensagem_cifrada = base64.b64decode(arquivo.read())
+            mensagem = cipher_rsa.decrypt(mensagem_cifrada)
+        
+        # definindo o nome do arquivo para salvar a mensagem decifrada
+        while True:
+            nome_do_arquivo = input("Digite o nome do arquivo para salvar a mensagem decifrada: ")
+            if not nome_do_arquivo.strip():
+                print("Nome do arquivo não pode ser vazio.")
+                continue
+            else:
+                break
+
+        # definindo o diretório de exportação
+        diretorio_exportacao = input("Forneça o diretório de exportação: ")
+        if not os.path.exists(diretorio_exportacao):
+            os.makedirs(diretorio_exportacao)
+
+        # salvando a mensagem decifrada no arquivo    
+        with open(os.path.join(diretorio_exportacao, nome_do_arquivo+".txt"), "wb") as arquivo_decifrado:
+            arquivo_decifrado.write(mensagem)
+            return True
     except ValueError:
         print("A mensagem não pôde ser descriptografada com a chave fornecida.")
-        return None
-    return mensagem.decode('utf-8')
+        return False
