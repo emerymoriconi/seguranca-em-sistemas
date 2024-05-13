@@ -14,6 +14,16 @@ def selecionar_arquivo(chave):
                                          filetypes=(("Arquivos de texto", "*.txt"), ("Todos os arquivos", "*.*")))
     return arquivo
 
+def importar_chave_publica(arquivo):
+    try:
+        with open(arquivo, "rb") as arquivo:
+            dados = arquivo.read()
+            chave_publica = RSA.import_key(dados)
+            salvar_chave_publica(chave_publica)
+    except Exception as e:
+        print(f"Erro ao importar a chave pública: {e}")
+        return
+
 
 def importar_chaves():
     while (True):
