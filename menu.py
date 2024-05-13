@@ -27,6 +27,8 @@ while True:
     elif x == 3:
         email = selecionar_email()
         arquivo = selecionar_arquivo_criptografar()
+        if not arquivo:
+            print("Operação abortada. Arquivo não selecionado.")
         if criptografar(email, arquivo):
             print("Arquivo criptografado salvo com sucesso no diretório escolhido!")
         else:
@@ -35,6 +37,8 @@ while True:
     elif x == 4:
         email = selecionar_email()
         arquivo = selecionar_arquivo_descriptografar()
+        if not arquivo:
+            print("Operação abortada. Arquivo não selecionado.")
         if descriptografar_mensagem(email, arquivo):
             print("Arquivo descriptografado salvo com sucesso no diretório escolhido!")
         else:

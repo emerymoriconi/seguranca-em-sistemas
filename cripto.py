@@ -3,6 +3,7 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Util import Padding
 from getpass import getpass
 from tkinter import Tk
+from tkinter import filedialog
 import os
 import base64
 import re
@@ -235,6 +236,7 @@ def criptografar_mensagem(email, arquivo, usar_chave_privada):
             mensagem = arquivo.read()
             mensagem_cifrada = cipher_rsa.encrypt(mensagem)
 
+        '''
         # definindo o nome do arquivo para salvar a mensagem cifrada
         while True:
             nome_do_arquivo = input("Digite o nome do arquivo para salvar a mensagem cifrada: ")
@@ -248,9 +250,18 @@ def criptografar_mensagem(email, arquivo, usar_chave_privada):
         diretorio_exportacao = input("Forneça o diretório de exportação: ")
         if not os.path.exists(diretorio_exportacao):
             os.makedirs(diretorio_exportacao)
+        '''
+        # definindo o nome do arquivo para salvar a mensagem cifrada
+        while True:
+            nome_do_arquivo = filedialog.asksaveasfilename(filetypes=[("Arquivos de texto", "*.txt")])
+            if not nome_do_arquivo.strip():
+                print("Nome do arquivo não pode ser vazio.")
+                continue
+            else:
+                break
 
         # salvando a mensagem cifrada no arquivo    
-        with open(os.path.join(diretorio_exportacao, nome_do_arquivo+".txt"), "wb") as arquivo_cifrado:
+        with open(nome_do_arquivo, "wb") as arquivo_cifrado:
             arquivo_cifrado.write(base64.b64encode(mensagem_cifrada))
             return True
     except ValueError:
@@ -278,6 +289,7 @@ def descriptografar_mensagem(email, arquivo_cifrado):
             mensagem_cifrada = base64.b64decode(arquivo.read())
             mensagem = cipher_rsa.decrypt(mensagem_cifrada)
         
+        '''
         # definindo o nome do arquivo para salvar a mensagem decifrada
         while True:
             nome_do_arquivo = input("Digite o nome do arquivo para salvar a mensagem decifrada: ")
@@ -291,9 +303,19 @@ def descriptografar_mensagem(email, arquivo_cifrado):
         diretorio_exportacao = input("Forneça o diretório de exportação: ")
         if not os.path.exists(diretorio_exportacao):
             os.makedirs(diretorio_exportacao)
+        '''
+
+        # definindo o nome do arquivo para salvar a mensagem decifrada
+        while True:
+            nome_do_arquivo = filedialog.asksaveasfilename(filetypes=[("Arquivos de texto", "*.txt")])
+            if not nome_do_arquivo.strip():
+                print("Nome do arquivo não pode ser vazio.")
+                continue
+            else:
+                break
 
         # salvando a mensagem decifrada no arquivo    
-        with open(os.path.join(diretorio_exportacao, nome_do_arquivo+".txt"), "wb") as arquivo_decifrado:
+        with open(nome_do_arquivo, "wb") as arquivo_decifrado:
             arquivo_decifrado.write(mensagem)
             return True
     except ValueError:

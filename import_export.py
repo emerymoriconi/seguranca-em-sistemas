@@ -10,41 +10,38 @@ from tkinter import filedialog
 def selecionar_arquivo_criptografar():
     # selecionando um arquivo com tkinter
     root = tk.Tk()
-    while True:
-        try:
-            arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo para criptografar", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
-            with open(arquivo, "r") as file:
-                return arquivo
-        except Exception as e:
-            print(f"Erro ao selecionar arquivo: {e}")
-            print("Tente novamente.")
-            continue
+    try:
+        arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo para criptografar", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
+        with open(arquivo, "r") as file:
+            root.destroy()
+            return arquivo
+    except Exception as e:
+        print(f"Erro ao selecionar arquivo: {e}")
+    return None
 
 def selecionar_arquivo_descriptografar():
     # selecionando um arquivo com tkinter
     root = tk.Tk()
-    while True:
-        try:
-            arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo para descriptografar", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
-            with open(arquivo, "r") as file:
-                return arquivo
-        except Exception as e:
-            print(f"Erro ao selecionar arquivo: {e}")
-            print("Tente novamente.")
-            continue
+    try:
+        arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo para descriptografar", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
+        with open(arquivo, "r") as file:
+            root.destroy()
+            return arquivo
+    except Exception as e:
+        print(f"Erro ao selecionar arquivo: {e}")
+    return None
 
 def selecionar_arquivo(chave):
     # criando janela de seleção de arquivo com tkinter 
     root = tk.Tk()
-    while True:
-        try:
-            arquivo = filedialog.askopenfilename(initialdir="/", title=f"Selecione arquivo da chave {chave}", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
-            with open(arquivo, "r") as file:
-                return arquivo
-        except Exception as e:
-            print(f"Erro ao selecionar arquivo: {e}")
-            print("Tente novamente.")
-            continue
+    try:
+        arquivo = filedialog.askopenfilename(initialdir="/", title=f"Selecione arquivo da chave {chave}", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
+        with open(arquivo, "r") as file:
+            root.destroy()
+            return arquivo
+    except Exception as e:
+        print(f"Erro ao selecionar arquivo: {e}")
+    return None
 
 
 def importar_chaves():
@@ -57,11 +54,17 @@ def importar_chaves():
             break
     
     chave_publica_path = selecionar_arquivo("pública")
+    if not chave_publica_path:
+        print("Operação abortada. Arquivo não selecionado.")
+        return
     #input("Forneça o caminho do arquivo da chave pública: ")
     while (True):
         resposta = input("Deseja importar chave privada? (S/N)")
         if resposta.lower() == 's':
-            chave_privada_path = selecionar_arquivo("pprivada")
+            chave_privada_path = selecionar_arquivo("privada")
+            if not chave_privada_path:
+                print("Operação abortada. Arquivo não selecionado.")
+                return
             #input("Forneça o caminho do arquivo da chave privada: ")
             senha = input("Forneça a senha da chave privada: ")
 
@@ -98,11 +101,13 @@ def exportar_chaves():
             break
 
     # diretório de exportação
-    diretorio_exportacao = input("Forneça o diretório de exportação: ")
-    if not os.path.exists(diretorio_exportacao):
-        os.makedirs(diretorio_exportacao)        
+    root = tk.Tk()
+    diretorio = filedialog.askdirectory(initialdir="/", title="Selecione o diretório de exportação")
+    if not diretorio:
+        print("Operação abortada. Diretório não selecionado.")
+        return
 
-
+    root.destroy()
     with open("lista_emails.txt", "r") as arquivo:
         for linha in arquivo:
             if email in linha:
@@ -110,12 +115,14 @@ def exportar_chaves():
                 caminho_chave_privada = os.path.join(diretorio_chaves, f"{email}_privada.pem")
                 if os.path.exists(caminho_chave_privada):
                     # copiar o arquivo para o diretório de exportação
-                    shutil.copy(caminho_chave_privada, diretorio_exportacao)
+                    shutil.copy(caminho_chave_privada, diretorio)
 
                 # Verificar se o arquivo da chave pública existe
                 caminho_chave_publica = os.path.join(diretorio_chaves, f"{email}_publica.pem")
                 if os.path.exists(caminho_chave_publica):
                     # copiar o arquivo para o diretório de exportação
-                    shutil.copy(caminho_chave_publica, diretorio_exportacao)
+                    shutil.copy(caminho_chave_publica, diretorio)
+
+                print("Chaves exportadas com sucesso.")
                 return
         raise ValueError("E-mail não encontrado")
