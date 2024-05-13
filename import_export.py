@@ -9,6 +9,7 @@ from tkinter import filedialog
 
 def selecionar_arquivo_criptografar():
     # selecionando um arquivo com tkinter
+<<<<<<< Updated upstream
     root = tk.Tk()
     root.withdraw()  # Esconde a janela principal
     while True:
@@ -36,11 +37,44 @@ def selecionar_arquivo_descriptografar():
             continue
 
 def selecionar_arquivo(chave):
+=======
+>>>>>>> Stashed changes
     root = tk.Tk()
-    root.withdraw()  # Esconde a janela principal
-    arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo de chave " + chave,
-                                         filetypes=(("Arquivos .pem", "*.pem"), ("Todos os arquivos", "*.*")))
-    return arquivo
+    while True:
+        try:
+            arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo para criptografar", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
+            with open(arquivo, "r") as file:
+                return arquivo
+        except Exception as e:
+            print(f"Erro ao selecionar arquivo: {e}")
+            print("Tente novamente.")
+            continue
+
+def selecionar_arquivo_descriptografar():
+    # selecionando um arquivo com tkinter
+    root = tk.Tk()
+    while True:
+        try:
+            arquivo = filedialog.askopenfilename(initialdir="/", title="Selecione arquivo para descriptografar", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
+            with open(arquivo, "r") as file:
+                return arquivo
+        except Exception as e:
+            print(f"Erro ao selecionar arquivo: {e}")
+            print("Tente novamente.")
+            continue
+
+def selecionar_arquivo(chave):
+    # criando janela de seleção de arquivo com tkinter 
+    root = tk.Tk()
+    while True:
+        try:
+            arquivo = filedialog.askopenfilename(initialdir="/", title=f"Selecione arquivo da chave {chave}", filetypes=(("Todos os arquivos", "*.*"), ("Arquivos de texto", "*.txt")))
+            with open(arquivo, "r") as file:
+                return arquivo
+        except Exception as e:
+            print(f"Erro ao selecionar arquivo: {e}")
+            print("Tente novamente.")
+            continue
 
 
 def importar_chaves():

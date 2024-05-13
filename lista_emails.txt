@@ -1,1 +1,9 @@
+<<<<<<< Updated upstream
 raffa@email.com
+=======
+emery@email.com
+av@email.com
+luis@email.com
+benjamim@email.com
+emerymoriconi@email.com
+>>>>>>> Stashed changes
